@@ -1,0 +1,9 @@
+node_modules/
+.env
+dist/
+build/
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!jest.config.json

@@ -1,0 +1,25 @@
+/* Add these styles to App.css for calendar weekday headers */
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.calendar-weekdays > div {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #cbd5e0;
+  padding: 8px 0;
+  background: #23272f;
+  border-radius: 6px;
+}
+
+.calendar-view {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
