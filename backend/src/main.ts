@@ -5,11 +5,35 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
+  // Rate limiting middleware
+  const rateLimit = require('express-rate-limit');
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // increased for development
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
+  
+  // Stricter rate limit for auth endpoints
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50, // increased for development
+    message: 'Too many authentication attempts, please try again later.',
+  });
+  app.use('/auth/login', authLimiter);
+  app.use('/auth/register', authLimiter);
+  app.use('/auth/oauth/login', authLimiter);
+  
   app.use(helmet({
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -17,6 +41,7 @@ async function bootstrap() {
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:"],
         scriptSrc: ["'self'"],
+        connectSrc: ["'self'", "https://api.ivao.aero", "https://login.ivao.aero", "https://sso.ivao.aero"],
       },
     },
     hsts: {
@@ -24,13 +49,18 @@ async function bootstrap() {
       includeSubDomains: true,
       preload: true,
     },
+    noSniff: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   }));
   
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
-    disableErrorMessages: false,
+    disableErrorMessages: process.env.NODE_ENV === 'production',
+    transformOptions: {
+      enableImplicitConversion: false,
+    },
   }));
   
   const allowedOrigins = process.env.FRONTEND_URL 

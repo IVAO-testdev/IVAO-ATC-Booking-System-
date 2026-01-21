@@ -29,9 +29,8 @@ export class BookingsService {
     if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new BadRequestException('Invalid date format');
     }
-    // console.log('dates:', start, end);
     
-    // prevent weird dates like year 95932
+    // sanity check on years
     const startYear = start.getFullYear();
     const endYear = end.getFullYear();
     if (startYear < 2020 || startYear > 2100 || endYear < 2020 || endYear > 2100) {
@@ -114,7 +113,7 @@ export class BookingsService {
   }
 
   findAll() {
-    return this.repo.find();
+    return this.repo.find({ order: { startAt: 'DESC' } });
   }
 
   findFuture() {

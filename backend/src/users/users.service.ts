@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -21,8 +21,6 @@ const RATING_LEVELS: { [key: number]: string } = {
 
 @Injectable()
 export class UsersService implements OnModuleInit {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
     @InjectRepository(User)
     private repo: Repository<User>,
@@ -38,7 +36,6 @@ export class UsersService implements OnModuleInit {
       const defaultUser = this.repo.create({
         vid: '000000',
         name: 'Test User',
-        email: 'test@ivao.aero',
         rating: 4,
         ratingLevel: 'ADC',
         countryId: 'KR',
@@ -51,21 +48,21 @@ export class UsersService implements OnModuleInit {
   async createUser(userData: {
     vid: string;
     name?: string;
-    email?: string;
     rating: number;
     ratingLevel?: string;
     divisionId?: string;
     countryId?: string;
   }): Promise<User> {
-    const ratingLevel = userData.ratingLevel || RATING_LEVELS[userData.rating] || 'NO_RATING';
+    const rating = Math.max(userData.rating || 0, 2);
+    const ratingLevel = userData.ratingLevel || RATING_LEVELS[rating] || 'AS1';
 
     let user = await this.repo.findOneBy({ vid: userData.vid });
 
     if (user) {
-      const ratingChanged = user.rating !== userData.rating;
+      const newRating = Math.max(userData.rating || user.rating, 2);
+      const ratingChanged = user.rating !== newRating;
       user.name = userData.name || user.name;
-      user.email = userData.email || user.email;
-      user.rating = userData.rating;
+      user.rating = newRating;
       user.ratingLevel = ratingLevel;
       user.divisionId = userData.divisionId || user.divisionId;
       user.countryId = userData.countryId || user.countryId;
@@ -77,7 +74,6 @@ export class UsersService implements OnModuleInit {
       user = this.repo.create({
         vid: userData.vid,
         name: userData.name || userData.vid,
-        email: userData.email,
         rating: userData.rating,
         ratingLevel,
         divisionId: userData.divisionId,
@@ -128,5 +124,8 @@ export class UsersService implements OnModuleInit {
   async getAllUsers(): Promise<User[]> {
     return this.repo.find({ order: { vid: 'ASC' } });
   }
-}
 
+  async updateUser(user: User): Promise<User> {
+    return this.repo.save(user);
+  }
+}

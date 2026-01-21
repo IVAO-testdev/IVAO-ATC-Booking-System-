@@ -29,19 +29,11 @@ Access: http://localhost:3000
 
 ## Login
 
-Enter your real IVAO VID to log in. The system fetches your actual member data (rating, division, country) from IVAO API v2 automatically.
+**Option 1: OAuth 2.0 (Recommended)**
+Click "Login with IVAO" button - redirects to IVAO login page, authenticates with your real account.
 
-## Authentication Design Choice
-
-The exercise suggests sending VID as a plain HTTP header with the assumption that "end-user can't forge headers". However, in reality, browser DevTools allow easy header manipulation, enabling users to impersonate others.
-
-I chose signed Bearer tokens (HMAC-SHA256) instead because:
-- Prevents impersonation attacks (exercise requires "prevent users impersonating other users")
-- Still simple to implement (single token.util.ts file)
-- Industry standard approach
-- Minimal overhead while providing real security
-
-The exercise states "if you have a better idea, we are open to it" - this is that idea.
+**Option 2: Direct VID**
+Enter your IVAO VID. The system fetches your member data from IVAO API v2.
 
 ## What it does
 - List/calendar/timeline views

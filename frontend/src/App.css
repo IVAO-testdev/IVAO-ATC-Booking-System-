@@ -23,14 +23,14 @@ body {
 }
 
 .header {
-  background: rgba(15, 18, 22, 0.95);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 18px 32px;
+  background: rgba(15, 18, 22, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 24px;
-  backdrop-filter: blur(20px) saturate(180%);
+  gap: 20px;
+  backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -43,8 +43,8 @@ body {
 }
 
 .logo {
-  height: 52px;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+  height: 46px;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
 }
 
 .header-title h1 {
@@ -65,8 +65,85 @@ body {
 
 .auth-section {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
+}
+
+.login-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.oauth-btn {
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca3af;
+  transition: all 0.15s ease;
+}
+
+.oauth-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e0;
+}
+
+.login-sep {
+  color: #4b5563;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.vid-login {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.vid-input {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e8eaed;
+  padding: 7px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  width: 100px;
+  transition: all 0.15s ease;
+}
+
+.vid-input:focus {
+  outline: none;
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.vid-input::placeholder {
+  color: #6b7280;
+}
+
+.vid-btn {
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca3af;
+  transition: all 0.15s ease;
+}
+
+.vid-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e0;
 }
 
 .input-field {
@@ -94,7 +171,73 @@ body {
   flex-direction: column;
   gap: 4px;
   align-items: flex-start;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.profile-name {
+  color: #ffffff;
   font-size: 14px;
+  font-weight: 500;
+}
+
+.profile-vid {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.meta-item {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.meta-divider {
+  color: #4b5563;
+}
+
+.btn-logout {
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: #9ca3af;
+  transition: all 0.15s ease;
+}
+
+.btn-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e0;
 }
 
 .user-name {
@@ -130,12 +273,13 @@ body {
 
 .time-display {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
+  height: 39px;
 }
 
 .time-label {

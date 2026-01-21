@@ -2,8 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Req, Put, Query, BadRequest
 import { BookingsService } from './bookings.service';
 import { verifyToken } from '../auth/token.util';
 
-// simple sanitization
-const clean = (s: any, max = 500): string => {
+const sanitize = (s: any, max = 500) => {
   if (typeof s !== 'string') return String(s).slice(0, max);
   return s.slice(0, max).replace(/[<>\"'`]/g, '').trim();
 };
@@ -26,8 +25,8 @@ export class BookingsController {
   constructor(private readonly svc: BookingsService) {}
 
   @Get()
-  listFuture() {
-    return this.svc.findFuture();
+  listAll() {
+    return this.svc.findAll();
   }
 
   @Get('date/:date')

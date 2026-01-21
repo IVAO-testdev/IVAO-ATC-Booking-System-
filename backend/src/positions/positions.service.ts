@@ -1,11 +1,10 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Position } from './position.entity';
 
 @Injectable()
 export class PositionsService implements OnModuleInit {
-  private readonly logger = new Logger(PositionsService.name);
   private positionsCache: Position[] | null = null;
   private cacheTime: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 min

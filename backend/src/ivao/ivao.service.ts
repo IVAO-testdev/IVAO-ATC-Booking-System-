@@ -27,6 +27,10 @@ export class IvaoService {
   }
 
   async getUser(vid: string) {
+    if (!vid || !/^\d{1,10}$/.test(vid)) {
+      throw new HttpException('Invalid VID format', 400);
+    }
+    
     const timeout = 5000;
     try {
       const response = await axios.get(`${this.apiBase}/users/${vid}`, {
@@ -38,7 +42,6 @@ export class IvaoService {
       if (error.response?.status === 404) {
         return null;
       }
-      // console.log('ivao api error:', error.message);
       throw new HttpException('Failed to fetch user from IVAO', 500);
     }
   }
@@ -57,6 +60,10 @@ export class IvaoService {
   }
 
   async getAirportPositions(icao: string) {
+    if (!icao || !/^[A-Z]{4}$/.test(icao)) {
+      return [];
+    }
+    
     try {
       const response = await axios.get(`${this.apiBase}/airports/${icao}/ATCPositions`, {
         headers: this.headers,

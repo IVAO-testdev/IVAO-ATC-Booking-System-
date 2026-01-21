@@ -78,9 +78,32 @@ export default function App() {
   });
 
   useEffect(() => {
+    // oauth callback handling
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('token');
+    const err = params.get('error');
+    
+    if (t) {
+      localStorage.removeItem('we_token');
+      localStorage.setItem('we_token', t);
+      setToken(t);
+      window.history.replaceState({}, '', '/');
+      
+      axios.get(`${API_BASE}/auth/me`, { 
+        headers: { Authorization: `Bearer ${t}` } 
+      }).then(r => {
+        if (r.data?.user) setCurrentUser(r.data.user);
+      }).catch(() => {});
+    }
+    
+    if (err) {
+      setError('Login failed: ' + err);
+      setTimeout(() => setError(''), 3000);
+      window.history.replaceState({}, '', '/');
+    }
+
     fetchPositions();
     fetchBookings();
-    if (token) fetchUser();
     
     const handleClickOutside = (e) => {
       if (!e.target.closest('.custom-select-wrapper')) {
@@ -99,27 +122,40 @@ export default function App() {
     };
   }, []);
 
+  // Fetch user when token changes or on mount
+  useEffect(() => {
+    if (token) {
+      fetchUser();
+    } else {
+      setCurrentUser(null);
+    }
+  }, [token]);
+
   useEffect(() => {
     fetchBookings();
   }, [selectedDivision]);
 
   const fetchUser = async () => {
-    if (!token) return setCurrentUser(null);
+    if (!token) {
+      return setCurrentUser(null);
+    }
+    
     try {
       const r = await axios.get(`${API_BASE}/auth/me`, { 
-        headers: { Authorization: `Bearer ${token}` } 
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
       });
       if (r.data?.user) {
         setCurrentUser(r.data.user);
       } else {
         setCurrentUser(null);
-        setToken('');
-        localStorage.removeItem('we_token');
       }
     } catch (e) {
+      if (e.response?.status === 401) {
+        localStorage.removeItem('we_token');
+        setToken('');
+      }
       setCurrentUser(null);
-      setToken('');
-      localStorage.removeItem('we_token');
     }
   };
 
@@ -196,12 +232,17 @@ export default function App() {
     }
   };
 
+  const handleOAuthLogin = () => {
+    window.location.href = `${API_BASE}/auth/oauth/login`;
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('we_token');
     setToken('');
     setCurrentUser(null);
-    setSuccess('Logged out successfully');
-    setTimeout(() => setSuccess(''), 3000);
+    setBookings([]);
+    setSuccess('Logged out');
+    setTimeout(() => setSuccess(''), 2000);
   };
 
   const getUTCNow = () => {
@@ -410,7 +451,7 @@ export default function App() {
       return pos && pos.division === selectedDivision;
     }
     return true;
-  }), [bookings, positions, selectedDivision]);
+  }).sort((a, b) => new Date(b.startAt) - new Date(a.startAt)), [bookings, positions, selectedDivision]);
 
   const divisions = useMemo(() => 
     [...new Set(positions.map(p => p.division).filter(Boolean))].sort(),
@@ -446,17 +487,24 @@ export default function App() {
   }, [bookings, positions, selectedDivision]);
 
   const getFilteredBookingsByDateRange = useCallback(() => {
+    const now = new Date();
+    
     if (dateRange === 'all') {
-      return filteredBookings;
+      // For 'all', show only future bookings
+      return filteredBookings.filter(b => {
+        const bookingEnd = parseISO(b.endAt);
+        return bookingEnd > now;
+      });
     }
     
-    const now = new Date();
     const days = dateRange === '7days' ? 7 : dateRange === '30days' ? 30 : 0;
     const endDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
     
     return filteredBookings.filter(b => {
       const bookingStart = parseISO(b.startAt);
-      return bookingStart <= endDate;
+      const bookingEnd = parseISO(b.endAt);
+      // Show only bookings that haven't ended yet and start within the range
+      return bookingEnd > now && bookingStart <= endDate;
     });
   }, [filteredBookings, dateRange]);
 
@@ -491,34 +539,45 @@ export default function App() {
           </div>
           <div className="auth-section">
           {!token ? (
-            <>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Enter your VID"
-                value={vidInput}
-                onChange={e => setVidInput(sanitize(e.target.value, 20))}
-                onKeyPress={e => e.key === 'Enter' && handleLogin()}
-                maxLength="20"
-              />
-              <button className="btn btn-primary" onClick={handleLogin}>
-                Login
+            <div className="login-box">
+              <button className="oauth-btn" onClick={handleOAuthLogin}>
+                Login with IVAO
               </button>
-            </>
-          ) : (
-            <>
-              <div className="user-info">
-                {currentUser?.name && <span className="user-name">{currentUser.name}</span>}
-                <span className="user-vid">VID: {currentUser?.vid}</span>
-                {currentUser?.divisionId && <span className="user-division">Division: {currentUser.divisionId}</span>}
-                <span className="user-rating">
-                  Rating: <span className="rating-level">{currentUser?.ratingLevel || 'NO_RATING'}</span>
-                </span>
+              <span className="login-sep">or</span>
+              <div className="vid-login">
+                <input
+                  type="text"
+                  className="vid-input"
+                  placeholder="VID"
+                  value={vidInput}
+                  onChange={e => setVidInput(sanitize(e.target.value, 20))}
+                  onKeyPress={e => e.key === 'Enter' && handleLogin()}
+                  maxLength="10"
+                />
+                <button className="vid-btn" onClick={handleLogin}>LOGIN</button>
               </div>
-              <button className="btn btn-secondary" onClick={handleLogout}>
+            </div>
+          ) : (
+            <div className="user-profile">
+              <div className="profile-info">
+                <div className="profile-main">
+                  {currentUser?.name && <span className="profile-name">{currentUser.name}</span>}
+                  <span className="profile-vid">{currentUser?.vid}</span>
+                </div>
+                <div className="profile-meta">
+                  <span className="meta-item">{currentUser?.ratingLevel || 'AS1'}</span>
+                  {currentUser?.divisionId && (
+                    <>
+                      <span className="meta-divider">·</span>
+                      <span className="meta-item">{currentUser.divisionId}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button className="btn-logout" onClick={handleLogout}>
                 Logout
               </button>
-            </>
+            </div>
           )}
           </div>
         </div>
@@ -945,7 +1004,7 @@ export default function App() {
                       <button className="btn btn-secondary btn-small" onClick={() => setSelectedDayBookings(null)}>Close</button>
                     </div>
                     <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                      {selectedDayBookings.bookings.map(b => {
+                      {selectedDayBookings.bookings.sort((a, b) => new Date(b.startAt) - new Date(a.startAt)).map(b => {
                         const startUTC = parseISO(b.startAt);
                         const endUTC = parseISO(b.endAt);
                         const pos = positions.find(p => p.code === b.position);
@@ -1101,7 +1160,7 @@ export default function App() {
                   <button className="btn btn-secondary btn-small" onClick={() => setSelectedDayBookings(null)}>Close</button>
                 </div>
                 <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
-                  {selectedDayBookings.bookings.map(b => {
+                  {selectedDayBookings.bookings.sort((a, b) => new Date(b.startAt) - new Date(a.startAt)).map(b => {
                     const startUTC = parseISO(b.startAt);
                     const endUTC = parseISO(b.endAt);
                     const pos = positions.find(p => p.code === b.position);
