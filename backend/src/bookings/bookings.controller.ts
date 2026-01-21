@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Req, Put, Query, BadRequest
 import { BookingsService } from './bookings.service';
 import { verifyToken } from '../auth/token.util';
 
-const sanitize = (s: any, max = 500) => {
+const clean = (s: any, max = 500) => {
   if (typeof s !== 'string') return String(s).slice(0, max);
   return s.slice(0, max).replace(/[<>\"'`]/g, '').trim();
 };
