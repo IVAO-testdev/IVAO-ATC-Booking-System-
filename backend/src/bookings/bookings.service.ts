@@ -29,8 +29,12 @@ export class BookingsService {
     if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) {
       throw new BadRequestException('Invalid date format');
     }
+    // console.log('dates:', start, end);
     
-    if (start.getFullYear() < 2020 || start.getFullYear() > 2100 || end.getFullYear() < 2020 || end.getFullYear() > 2100) {
+    // prevent weird dates like year 95932
+    const startYear = start.getFullYear();
+    const endYear = end.getFullYear();
+    if (startYear < 2020 || startYear > 2100 || endYear < 2020 || endYear > 2100) {
       throw new BadRequestException('Date must be between 2020 and 2100');
     }
     

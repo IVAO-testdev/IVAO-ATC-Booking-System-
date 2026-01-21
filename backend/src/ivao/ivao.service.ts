@@ -4,7 +4,20 @@ import axios from 'axios';
 @Injectable()
 export class IvaoService {
   private readonly apiKey = process.env.IVAO_API_KEY;
-  private readonly apiBase = process.env.IVAO_API_BASE || 'https://api.ivao.aero/v2';
+  private readonly apiBase = this.sanitizeApiBase(process.env.IVAO_API_BASE || 'https://api.ivao.aero/v2');
+
+  private sanitizeApiBase(url: string): string {
+    // only allow ivao api domain
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname !== 'api.ivao.aero') {
+        return 'https://api.ivao.aero/v2';
+      }
+      return url;
+    } catch {
+      return 'https://api.ivao.aero/v2';
+    }
+  }
 
   private get headers() {
     return {
@@ -14,15 +27,18 @@ export class IvaoService {
   }
 
   async getUser(vid: string) {
+    const timeout = 5000;
     try {
       const response = await axios.get(`${this.apiBase}/users/${vid}`, {
         headers: this.headers,
+        timeout,
       });
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
       }
+      // console.log('ivao api error:', error.message);
       throw new HttpException('Failed to fetch user from IVAO', 500);
     }
   }
@@ -31,9 +47,11 @@ export class IvaoService {
     try {
       const response = await axios.get(`${this.apiBase}/ATCPositions/all`, {
         headers: this.headers,
+        timeout: 5000,
       });
       return response.data;
     } catch (error: any) {
+      // just return empty if fails
       return [];
     }
   }
@@ -42,6 +60,7 @@ export class IvaoService {
     try {
       const response = await axios.get(`${this.apiBase}/airports/${icao}/ATCPositions`, {
         headers: this.headers,
+        timeout: 5000,
       });
       return response.data;
     } catch (error: any) {
@@ -53,6 +72,7 @@ export class IvaoService {
     try {
       const response = await axios.get(`${this.apiBase}/divisions/all`, {
         headers: this.headers,
+        timeout: 5000,
       });
       return response.data;
     } catch (error: any) {

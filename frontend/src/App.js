@@ -7,7 +7,7 @@ const getApiBase = () => {
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }
-  
+  // auto detect based on current hostname
   const hostname = window.location.hostname;
   const protocol = window.location.protocol;
   
@@ -41,7 +41,9 @@ const sanitize = (str, max = 500) => {
   return String(str).slice(0, max).replace(/[<>"'`]/g, '').trim();
 };
 
-const validTime = (t) => /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(t);
+const validTime = (t) => {
+  return /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/.test(t);
+};
 
 export default function App() {
   const [bookings, setBookings] = useState([]);

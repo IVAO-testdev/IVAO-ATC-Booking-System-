@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Req, Put, Query, BadRequest
 import { BookingsService } from './bookings.service';
 import { verifyToken } from '../auth/token.util';
 
+// simple sanitization
 const clean = (s: any, max = 500): string => {
   if (typeof s !== 'string') return String(s).slice(0, max);
   return s.slice(0, max).replace(/[<>\"'`]/g, '').trim();
@@ -9,10 +10,11 @@ const clean = (s: any, max = 500): string => {
 
 function getVidFromReq(req: any) {
   const auth = (req.headers.authorization || '').toString();
-  const m = auth.match(/^Bearer\s+(.+)$/);
-  if (!m) return null;
+  if (!auth.startsWith('Bearer ')) return null;
+  const token = auth.substring(7);
+  if (!token || token.length > 500) return null;
   try {
-    const obj = verifyToken(m[1]);
+    const obj = verifyToken(token);
     return obj?.vid || null;
   } catch (e) {
     return null;

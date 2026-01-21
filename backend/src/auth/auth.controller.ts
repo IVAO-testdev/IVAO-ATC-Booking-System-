@@ -112,10 +112,15 @@ export class AuthController {
   @Get('me')
   me(@Req() req: any) {
     const auth = (req.headers.authorization || '').toString();
-    const m = auth.match(/^Bearer\s+(.+)$/);
-    if (!m) return { user: null };
-    const t = m[1];
-    const obj = verifyToken(t);
-    return { user: obj || null };
+    if (!auth.startsWith('Bearer ')) return { user: null };
+    const token = auth.substring(7);
+    // prevent large tokens
+    if (!token || token.length > 500) return { user: null };
+    try {
+      const obj = verifyToken(token);
+      return { user: obj || null };
+    } catch(e) {
+      return { user: null };
+    }
   }
 }
